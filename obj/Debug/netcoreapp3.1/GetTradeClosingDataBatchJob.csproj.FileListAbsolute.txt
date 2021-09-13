@@ -27,7 +27,6 @@ D:\GetTradeClosingDataBatchJob\GetTradeClosingDataBatchJob\bin\Debug\netcoreapp3
 D:\GetTradeClosingDataBatchJob\GetTradeClosingDataBatchJob\bin\Debug\netcoreapp3.1\runtimes\unix\lib\netcoreapp2.1\System.Security.Principal.Windows.dll
 D:\GetTradeClosingDataBatchJob\GetTradeClosingDataBatchJob\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp2.1\System.Security.Principal.Windows.dll
 D:\GetTradeClosingDataBatchJob\GetTradeClosingDataBatchJob\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll
-D:\GetTradeClosingDataBatchJob\GetTradeClosingDataBatchJob\obj\Debug\netcoreapp3.1\GetTradeClosingDataBatchJob.csprojAssemblyReference.cache
 D:\GetTradeClosingDataBatchJob\GetTradeClosingDataBatchJob\obj\Debug\netcoreapp3.1\GetTradeClosingDataBatchJob.AssemblyInfoInputs.cache
 D:\GetTradeClosingDataBatchJob\GetTradeClosingDataBatchJob\obj\Debug\netcoreapp3.1\GetTradeClosingDataBatchJob.AssemblyInfo.cs
 D:\GetTradeClosingDataBatchJob\GetTradeClosingDataBatchJob\obj\Debug\netcoreapp3.1\GetTradeClosingDataBatchJob.csproj.CoreCompileInputs.cache
@@ -83,3 +82,6 @@ C:\GetTradingData\obj\Debug\netcoreapp3.1\GetTradeClosingDataBatchJob.pdb
 C:\GetTradingData\obj\Debug\netcoreapp3.1\GetTradeClosingDataBatchJob.genruntimeconfig.cache
 C:\GetTradingData\bin\Debug\netcoreapp3.1\GetTradeClosingDataBatchJob.dll.config
 C:\GetTradingData\bin\Debug\netcoreapp3.1\Newtonsoft.Json.dll
+D:\GetTradeClosingDataBatchJob\GetTradeClosingDataBatchJob\bin\Debug\netcoreapp3.1\GetTradeClosingDataBatchJob.dll.config
+D:\GetTradeClosingDataBatchJob\GetTradeClosingDataBatchJob\bin\Debug\netcoreapp3.1\Newtonsoft.Json.dll
+D:\GetTradeClosingDataBatchJob\GetTradeClosingDataBatchJob\obj\Debug\netcoreapp3.1\GetTradeClosingDataBatchJob.csprojAssemblyReference.cache

@@ -7,22 +7,22 @@ using System.Linq;
 using System.Configuration;
 using log4net;
 
-public class SqlExtend
+namespace SqlExtend
 {
-	public class ADODB
+    public class ADODB
     {
         private static ILog log = LogManager.GetLogger("logger");
         public static void ExecuteNonQuery<T>(object obj) where T : new()
         {
             string table = TypeDescriptor.GetClassName(obj).Split('.')[1];
-            string sql = string.Concat("INSERT INTO ", table);
+            string sql = string.Concat(@"INSERT INTO [", table, "]");
             SqlConnection conn = new SqlConnection();
             SqlCommand cmd = new SqlCommand(sql, conn);
             try
             {
                 string connString = ConfigurationManager.ConnectionStrings["LocalDB"].ToString();
                 conn.ConnectionString = connString;
-                conn.Open();        
+                conn.Open();
 
                 List<PropertyInfo> properties = typeof(T).GetProperties().ToList();
 
@@ -36,7 +36,7 @@ public class SqlExtend
                     {
                         if (FirstColFlag)
                         {
-                            Cols = string.Concat(Cols, property.Name);
+                            Cols = string.Concat(Cols, "[", property.Name, "]");
                             Values = string.Concat(Values, "@", property.Name); // 這邊可以改用官方成員，取得是@或:  或用Spring切換DB
                             cmd.Parameters.Add(new SqlParameter(string.Concat("@", property.Name), property.GetValue(obj)));
                             paras = string.Concat(paras, property.Name, ": ", property.GetValue(obj));
@@ -44,12 +44,72 @@ public class SqlExtend
                         }
                         else
                         {
-                            Cols = string.Concat(Cols, ", ", property.Name);
+                            Cols = string.Concat(Cols, ", [", property.Name, "]");
                             Values = string.Concat(Values, ", @", property.Name); // 這邊可以改用官方成員，取得是@或:  或用Spring切換DB
                             paras = string.Concat(paras, ", ", property.Name, ": ", property.GetValue(obj));
                             cmd.Parameters.Add(new SqlParameter(string.Concat("@", property.Name), property.GetValue(obj)));
                         }
-                    }                    
+                    }
+                    else
+                    {
+                        switch (property.Name)
+                        {
+                            case "sys_createdate":
+                                if (FirstColFlag)
+                                {
+                                    Cols = string.Concat(Cols, "[", property.Name, "]");
+                                    Values = string.Concat(Values, "SYSDATE()");
+                                    FirstColFlag = false;
+                                }
+                                else
+                                {
+                                    Cols = string.Concat(Cols, ", [", property.Name, "]");
+                                    Values = string.Concat(Values, ", SYSDATE()");
+                                }
+                                break;
+                            case "sys_updatedate":
+                                if (FirstColFlag)
+                                {
+                                    Cols = string.Concat(Cols, "[", property.Name, "]");
+                                    Values = string.Concat(Values, "GETDATE()");
+                                    FirstColFlag = false;
+                                }
+                                else
+                                {
+                                    Cols = string.Concat(Cols, ", [", property.Name, "]");
+                                    Values = string.Concat(Values, ", GETDATE()");
+                                }
+                                break;
+                            case "sys_createuser":
+                                if (FirstColFlag)
+                                {
+                                    Cols = string.Concat(Cols, "[", property.Name, "]");
+                                    Values = string.Concat(Values, "'SYSTEM'");
+                                    FirstColFlag = false;
+                                }
+                                else
+                                {
+                                    Cols = string.Concat(Cols, ", [", property.Name, "]");
+                                    Values = string.Concat(Values, ", 'SYSTEM'");
+                                }
+                                break;
+                            case "sys_updateuser":
+                                if (FirstColFlag)
+                                {
+                                    Cols = string.Concat(Cols, "[", property.Name, "]");
+                                    Values = string.Concat(Values, "'SYSTEM'");
+                                    FirstColFlag = false;
+                                }
+                                else
+                                {
+                                    Cols = string.Concat(Cols, ", [", property.Name, "]");
+                                    Values = string.Concat(Values, ", 'SYSTEM'");
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
                 }
                 Cols += ")";
                 Values += ")";
@@ -58,7 +118,7 @@ public class SqlExtend
                 log.Info(string.Concat("\n\t", sql, "\nParamaters: { ", paras, " }"));
                 cmd.ExecuteNonQuery();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 log.Error(string.Concat("\n", ex.ToString()));
                 throw ex;
@@ -69,5 +129,5 @@ public class SqlExtend
             }
         }
     }
-   
+    
 }

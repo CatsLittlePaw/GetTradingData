@@ -7,13 +7,11 @@ using AngleSharp;
 using System.Collections.Generic;
 using System.Configuration;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Data.SqlClient;
-using System.ComponentModel;
+using SqlExtend;
 
 
 // 這裡的Config，因為不能透過ConfigManager抓，使用相對路徑
-[assembly: log4net.Config.XmlConfigurator(ConfigFile = @"..\..\..\log4net.config", Watch = true)]
+[assembly: log4net.Config.XmlConfigurator(ConfigFile = @"..\..\..\App.config", Watch = true)]
 namespace GetTradeClosingDataBatchJob
 {
     class Program
@@ -43,6 +41,23 @@ namespace GetTradeClosingDataBatchJob
 
                     string responseResult = responseMessage.Content.ReadAsStringAsync().Result; //取得內容
 
+                    /* 返回Json，進行Parse */
+                    DataPrototype dataContainer = new DataPrototype();
+                    dataContainer = JsonConvert.DeserializeObject<DataPrototype>(responseResult);
+                    foreach (var Stock in dataContainer.data9)
+                    {
+                        if (StockCodes.IndexOf(Stock[0]) != -1)
+                        {
+                            ClosingData obj = new ClosingData{ 
+                                StockCode = Stock[0],
+                                ClosingPrice = float.Parse(Stock[8]),
+                                sys_createuser = "GetTradeClosingDataBatchJob"
+                            };
+                            ADODB.ExecuteNonQuery<ClosingData>(obj);
+                        }
+                    }
+
+
                     /* 返回html，進行query
                     var config = AngleSharp.Configuration.Default;
                     var context = BrowsingContext.New(config);
@@ -59,21 +74,6 @@ namespace GetTradeClosingDataBatchJob
                         Console.WriteLine(c.TextContent);
                     }
                     */
-
-                    /* 返回Json，進行Parse */
-                    DataPrototype dataContainer = new DataPrototype();
-                    dataContainer = JsonConvert.DeserializeObject<DataPrototype>(responseResult);
-                    foreach (var Stock in dataContainer.data9)
-                    {
-                        if (StockCodes.IndexOf(Stock[0]) != -1)
-                        {
-                            ClosingData obj = new ClosingData{ 
-                                StockCode = Stock[0],
-                                ClosingPrice = float.Parse(Stock[8]) 
-                            };
-                            SqlExtend.ADODB.ExecuteNonQuery<ClosingData>(obj);
-                        }
-                    }
                 }
                 else
                 {
