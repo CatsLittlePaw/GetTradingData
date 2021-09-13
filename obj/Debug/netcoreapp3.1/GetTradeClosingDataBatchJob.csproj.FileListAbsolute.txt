@@ -82,3 +82,4 @@ C:\GetTradingData\obj\Debug\netcoreapp3.1\GetTradeClosingDataBatchJob.dll
 C:\GetTradingData\obj\Debug\netcoreapp3.1\GetTradeClosingDataBatchJob.pdb
 C:\GetTradingData\obj\Debug\netcoreapp3.1\GetTradeClosingDataBatchJob.genruntimeconfig.cache
 C:\GetTradingData\bin\Debug\netcoreapp3.1\GetTradeClosingDataBatchJob.dll.config
+C:\GetTradingData\bin\Debug\netcoreapp3.1\Newtonsoft.Json.dll
