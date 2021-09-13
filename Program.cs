@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Data.SqlClient;
+using System.ComponentModel;
 
 
 // 這裡的Config，因為不能透過ConfigManager抓，使用相對路徑
@@ -65,8 +67,11 @@ namespace GetTradeClosingDataBatchJob
                     {
                         if (StockCodes.IndexOf(Stock[0]) != -1)
                         {
-                            //這邊寫入DB
-                            //log.Info(Stock[0] + Stock[1] + "|" + Stock[8]);
+                            ClosingData obj = new ClosingData{ 
+                                StockCode = Stock[0],
+                                ClosingPrice = float.Parse(Stock[8]) 
+                            };
+                            SqlExtend.ADODB.ExecuteNonQuery<ClosingData>(obj);
                         }
                     }
                 }
