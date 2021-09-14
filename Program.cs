@@ -11,12 +11,20 @@ using SqlExtend;
 
 
 // 這裡的Config，因為不能透過ConfigManager抓，使用相對路徑
-[assembly: log4net.Config.XmlConfigurator(ConfigFile = @"..\..\..\App.config", Watch = true)]
+[assembly: log4net.Config.XmlConfigurator(ConfigFile = @"GetTradeClosingDataBatchJob.dll.config", Watch = true)]
 namespace GetTradeClosingDataBatchJob
 {
     class Program
     {
         private static ILog log = LogManager.GetLogger("logger");
+        /// <summary>
+        /// 抓取每日盤後資訊
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        /// <history>
+        /// 2021/09/15  Chris Liao  Create 
+        /// </history>
         static async Task Main(string[] args)
         {
             string BatchJobName = ConfigurationManager.AppSettings["BatchJobName"].ToString();
@@ -44,20 +52,24 @@ namespace GetTradeClosingDataBatchJob
                     /* 返回Json，進行Parse */
                     DataPrototype dataContainer = new DataPrototype();
                     dataContainer = JsonConvert.DeserializeObject<DataPrototype>(responseResult);
-                    foreach (var Stock in dataContainer.data9)
+                    if(dataContainer.data9 != null && dataContainer.data9.Count > 0)
                     {
-                        if (StockCodes.IndexOf(Stock[0]) != -1)
+                        foreach (var Stock in dataContainer.data9)
                         {
-                            ClosingData obj = new ClosingData {
-                                StockCode = Stock[0],
-                                CompanyName = Stock[1],
-                                ClosingPrice = decimal.Round(decimal.Parse(Stock[8]), 2),                                
-                                sys_createuser = "GetTradeClosingDataBatchJob"
-                            };
-                            ADODB.Insert<ClosingData>(obj);
+                            if (StockCodes.IndexOf(Stock[0]) != -1)
+                            {
+                                ClosingData obj = new ClosingData
+                                {
+                                    StockCode = Stock[0],
+                                    CompanyName = Stock[1],
+                                    ClosingPrice = decimal.Round(decimal.Parse(Stock[8]), 2),
+                                    sys_createuser = "GetTradeClosingDataBatchJob"
+                                };
+                                ADODB.Insert<ClosingData>(obj);
+                            }
                         }
                     }
-
+                    
 
                     /* 返回html，進行query
                     var config = AngleSharp.Configuration.Default;
