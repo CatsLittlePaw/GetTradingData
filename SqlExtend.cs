@@ -12,10 +12,10 @@ namespace SqlExtend
     public class ADODB
     {
         private static ILog log = LogManager.GetLogger("logger");
-        public static void ExecuteNonQuery<T>(object obj) where T : new()
+        public static int Insert<T>(object obj) where T : new()
         {
             string table = TypeDescriptor.GetClassName(obj).Split('.')[1];
-            string sql = string.Concat(@"INSERT INTO [", table, "]");
+            string sql = string.Concat(@"INSERT INTO [", table, "] ");
             SqlConnection conn = new SqlConnection();
             SqlCommand cmd = new SqlCommand(sql, conn);
             try
@@ -39,15 +39,30 @@ namespace SqlExtend
                             Cols = string.Concat(Cols, "[", property.Name, "]");
                             Values = string.Concat(Values, "@", property.Name); // 這邊可以改用官方成員，取得是@或:  或用Spring切換DB
                             cmd.Parameters.Add(new SqlParameter(string.Concat("@", property.Name), property.GetValue(obj)));
-                            paras = string.Concat(paras, property.Name, ": ", property.GetValue(obj));
+                            if(property.PropertyType == typeof(string))
+                            {
+                                paras = string.Concat(paras, property.Name, ": ", "'", property.GetValue(obj), "'");
+                            }
+                            else
+                            {
+                                paras = string.Concat(paras, property.Name, ": ", property.GetValue(obj));
+                            }                            
                             FirstColFlag = false;
                         }
                         else
                         {
                             Cols = string.Concat(Cols, ", [", property.Name, "]");
-                            Values = string.Concat(Values, ", @", property.Name); // 這邊可以改用官方成員，取得是@或:  或用Spring切換DB
-                            paras = string.Concat(paras, ", ", property.Name, ": ", property.GetValue(obj));
+                            Values = string.Concat(Values, ", @", property.Name); // 這邊可以改用官方成員，取得是@或:  或用Spring切換DB                
                             cmd.Parameters.Add(new SqlParameter(string.Concat("@", property.Name), property.GetValue(obj)));
+                            
+                            if(property.PropertyType == typeof(string))
+                            {
+                                paras = string.Concat(paras, ", ", property.Name, ": ", "'", property.GetValue(obj), "'");
+                            }
+                            else 
+                            {
+                                paras = string.Concat(paras, ", ", property.Name, ": ", property.GetValue(obj));
+                            }
                         }
                     }
                     else
@@ -116,7 +131,7 @@ namespace SqlExtend
 
                 sql = string.Concat(sql, Cols, " VALUES", Values, ";");
                 log.Info(string.Concat("\n\t", sql, "\nParamaters: { ", paras, " }"));
-                cmd.ExecuteNonQuery();
+                return cmd.ExecuteNonQuery();
             }
             catch (Exception ex)
             {

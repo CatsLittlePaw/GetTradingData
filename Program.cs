@@ -53,7 +53,7 @@ namespace GetTradeClosingDataBatchJob
                                 ClosingPrice = float.Parse(Stock[8]),
                                 sys_createuser = "GetTradeClosingDataBatchJob"
                             };
-                            ADODB.ExecuteNonQuery<ClosingData>(obj);
+                            ADODB.Insert<ClosingData>(obj);
                         }
                     }
 
