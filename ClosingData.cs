@@ -8,7 +8,7 @@ namespace GetTradeClosingDataBatchJob
     {
         public string StockCode { get; set; }
         public string CompanyName { get; set; }
-        public float ClosingPrice { get; set; }
+        public decimal ClosingPrice { get; set; }
 
 
 

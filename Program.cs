@@ -48,9 +48,10 @@ namespace GetTradeClosingDataBatchJob
                     {
                         if (StockCodes.IndexOf(Stock[0]) != -1)
                         {
-                            ClosingData obj = new ClosingData{ 
+                            ClosingData obj = new ClosingData {
                                 StockCode = Stock[0],
-                                ClosingPrice = float.Parse(Stock[8]),
+                                CompanyName = Stock[1],
+                                ClosingPrice = decimal.Round(decimal.Parse(Stock[8]), 2),                                
                                 sys_createuser = "GetTradeClosingDataBatchJob"
                             };
                             ADODB.Insert<ClosingData>(obj);

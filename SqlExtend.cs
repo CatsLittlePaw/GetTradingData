@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Data.SqlClient;
+using System.Data;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using System.Configuration;
+using System.Text;
 using log4net;
+
 
 namespace SqlExtend
 {
@@ -14,134 +17,145 @@ namespace SqlExtend
         private static ILog log = LogManager.GetLogger("logger");
         public static int Insert<T>(object obj) where T : new()
         {
+            string connString = ConfigurationManager.ConnectionStrings["LocalDB"].ToString();
             string table = TypeDescriptor.GetClassName(obj).Split('.')[1];
-            string sql = string.Concat(@"INSERT INTO [", table, "] ");
-            SqlConnection conn = new SqlConnection();
-            SqlCommand cmd = new SqlCommand(sql, conn);
-            try
+
+            using (SqlConnection conn = new SqlConnection(connString))
             {
-                string connString = ConfigurationManager.ConnectionStrings["LocalDB"].ToString();
-                conn.ConnectionString = connString;
-                conn.Open();
-
-                List<PropertyInfo> properties = typeof(T).GetProperties().ToList();
-
-                bool FirstColFlag = true;
-                string Cols = "(";
-                string Values = "(";
-                string paras = "";
-                foreach (var property in properties)
+                using(SqlCommand cmd = new SqlCommand())
                 {
-                    if (property.GetValue(obj) != null)
+                    try
                     {
-                        if (FirstColFlag)
+                        cmd.Connection = conn;
+                        conn.Open();                       
+
+                        List<PropertyInfo> properties = typeof(T).GetProperties().ToList();
+                        bool FirstColFlag = true;
+                        string Cols = "(";
+                        string Values = "(";
+                        string paras = "";
+                        foreach (var property in properties)
                         {
-                            Cols = string.Concat(Cols, "[", property.Name, "]");
-                            Values = string.Concat(Values, "@", property.Name); // 這邊可以改用官方成員，取得是@或:  或用Spring切換DB
-                            cmd.Parameters.Add(new SqlParameter(string.Concat("@", property.Name), property.GetValue(obj)));
-                            if(property.PropertyType == typeof(string))
+                            
+                            if (property.GetValue(obj) != null)
                             {
-                                paras = string.Concat(paras, property.Name, ": ", "'", property.GetValue(obj), "'");
+                                if (FirstColFlag)
+                                {
+                                    Cols = string.Concat(Cols, "[", property.Name, "]");
+                                    Values = string.Concat(Values, "@", property.Name); // 這邊可以改用官方成員，取得是@或:  或用Spring切換DB
+                                    cmd.Parameters.Add(new SqlParameter("@" + property.Name, property.GetValue(obj)));
+                                    if (property.PropertyType == typeof(string))
+                                    {
+                                        paras = string.Concat(paras, property.Name, ": ", "'", property.GetValue(obj), "'");
+                                    }
+                                    else
+                                    {
+                                        paras = string.Concat(paras, property.Name, ": ", property.GetValue(obj));
+                                    }
+                                    FirstColFlag = false;
+                                }
+                                else
+                                {
+                                    Cols = string.Concat(Cols, ", [", property.Name, "]");
+                                    Values = string.Concat(Values, ", @", property.Name); // 這邊可以改用官方成員，取得是@或:  或用Spring切換DB                
+                                    cmd.Parameters.Add(new SqlParameter("@" + property.Name, property.GetValue(obj)));
+
+                                    if (property.PropertyType == typeof(string))
+                                    {
+                                        paras = string.Concat(paras, ", ", property.Name, ": ", "'", property.GetValue(obj), "'");
+                                    }
+                                    else
+                                    {
+                                        paras = string.Concat(paras, ", ", property.Name, ": ", property.GetValue(obj));
+                                    }
+                                }
                             }
                             else
                             {
-                                paras = string.Concat(paras, property.Name, ": ", property.GetValue(obj));
-                            }                            
-                            FirstColFlag = false;
-                        }
-                        else
-                        {
-                            Cols = string.Concat(Cols, ", [", property.Name, "]");
-                            Values = string.Concat(Values, ", @", property.Name); // 這邊可以改用官方成員，取得是@或:  或用Spring切換DB                
-                            cmd.Parameters.Add(new SqlParameter(string.Concat("@", property.Name), property.GetValue(obj)));
+                                switch (property.Name)
+                                {
+                                    case "sys_createdate":
+                                        if (FirstColFlag)
+                                        {
+                                            Cols = string.Concat(Cols, "[", property.Name, "]");
+                                            Values = string.Concat(Values, @"GETDATE()");
+                                            FirstColFlag = false;
+                                        }
+                                        else
+                                        {
+                                            Cols = string.Concat(Cols, ", [", property.Name, "]");
+                                            Values = string.Concat(Values, ", GETDATE()");
+                                        }
+                                        break;
+                                    case "sys_updatedate":
+                                        if (FirstColFlag)
+                                        {
+                                            Cols = string.Concat(Cols, "[", property.Name, "]");
+                                            Values = string.Concat(Values, @"GETDATE()");
+                                            FirstColFlag = false;
+                                        }
+                                        else
+                                        {
+                                            Cols = string.Concat(Cols, ", [", property.Name, "]");
+                                            Values = string.Concat(Values, ", GETDATE()");
+                                        }
+                                        break;
+                                    case "sys_createuser":
+                                        if (FirstColFlag)
+                                        {
+                                            Cols = string.Concat(Cols, "[", property.Name, "]");
+                                            Values = string.Concat(Values, "'SYSTEM'");
+                                            FirstColFlag = false;
+                                        }
+                                        else
+                                        {
+                                            Cols = string.Concat(Cols, ", [", property.Name, "]");
+                                            Values = string.Concat(Values, ", 'SYSTEM'");
+                                        }
+                                        break;
+                                    case "sys_updateuser":
+                                        if (FirstColFlag)
+                                        {
+                                            Cols = string.Concat(Cols, "[", property.Name, "]");
+                                            Values = string.Concat(Values, "'SYSTEM'");
+                                            FirstColFlag = false;
+                                        }
+                                        else
+                                        {
+                                            Cols = string.Concat(Cols, ", [", property.Name, "]");
+                                            Values = string.Concat(Values, ", 'SYSTEM'");
+                                        }
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
                             
-                            if(property.PropertyType == typeof(string))
-                            {
-                                paras = string.Concat(paras, ", ", property.Name, ": ", "'", property.GetValue(obj), "'");
-                            }
-                            else 
-                            {
-                                paras = string.Concat(paras, ", ", property.Name, ": ", property.GetValue(obj));
-                            }
-                        }
+                        }                        
+                        Cols = string.Concat(Cols, ")");
+                        Values = string.Concat(Values, ")");
+                        
+                        /*** 慘痛教訓，這邊這個sql必須一氣呵成串起來，否則會有SQL語法錯誤的問題 ***/
+                        string sql = string.Concat("INSERT INTO [", table, "]", Cols, " VALUES", Values);                        
+                        log.Info(string.Concat("\n\t", sql, "\nParamaters: { ", paras, " }"));
+
+                        cmd.CommandText = sql;
+                        return cmd.ExecuteNonQuery();
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        switch (property.Name)
+                        log.Error(string.Concat("\n", ex.ToString()));
+                        throw ex;
+                    }
+                    finally
+                    {
+                        if (conn.State == ConnectionState.Open)
                         {
-                            case "sys_createdate":
-                                if (FirstColFlag)
-                                {
-                                    Cols = string.Concat(Cols, "[", property.Name, "]");
-                                    Values = string.Concat(Values, "SYSDATE()");
-                                    FirstColFlag = false;
-                                }
-                                else
-                                {
-                                    Cols = string.Concat(Cols, ", [", property.Name, "]");
-                                    Values = string.Concat(Values, ", SYSDATE()");
-                                }
-                                break;
-                            case "sys_updatedate":
-                                if (FirstColFlag)
-                                {
-                                    Cols = string.Concat(Cols, "[", property.Name, "]");
-                                    Values = string.Concat(Values, "GETDATE()");
-                                    FirstColFlag = false;
-                                }
-                                else
-                                {
-                                    Cols = string.Concat(Cols, ", [", property.Name, "]");
-                                    Values = string.Concat(Values, ", GETDATE()");
-                                }
-                                break;
-                            case "sys_createuser":
-                                if (FirstColFlag)
-                                {
-                                    Cols = string.Concat(Cols, "[", property.Name, "]");
-                                    Values = string.Concat(Values, "'SYSTEM'");
-                                    FirstColFlag = false;
-                                }
-                                else
-                                {
-                                    Cols = string.Concat(Cols, ", [", property.Name, "]");
-                                    Values = string.Concat(Values, ", 'SYSTEM'");
-                                }
-                                break;
-                            case "sys_updateuser":
-                                if (FirstColFlag)
-                                {
-                                    Cols = string.Concat(Cols, "[", property.Name, "]");
-                                    Values = string.Concat(Values, "'SYSTEM'");
-                                    FirstColFlag = false;
-                                }
-                                else
-                                {
-                                    Cols = string.Concat(Cols, ", [", property.Name, "]");
-                                    Values = string.Concat(Values, ", 'SYSTEM'");
-                                }
-                                break;
-                            default:
-                                break;
+                            conn.Close();
                         }
                     }
                 }
-                Cols += ")";
-                Values += ")";
-
-                sql = string.Concat(sql, Cols, " VALUES", Values, ";");
-                log.Info(string.Concat("\n\t", sql, "\nParamaters: { ", paras, " }"));
-                return cmd.ExecuteNonQuery();
-            }
-            catch (Exception ex)
-            {
-                log.Error(string.Concat("\n", ex.ToString()));
-                throw ex;
-            }
-            finally
-            {
-                conn.Close();
-            }
+            }                   
         }
     }
     
