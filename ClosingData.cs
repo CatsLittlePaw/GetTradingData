@@ -9,7 +9,7 @@ namespace GetTradeClosingDataBatchJob
         public string StockCode { get; set; }
         public string CompanyName { get; set; }
         public decimal ClosingPrice { get; set; }
-
+        public string Date { get; set; }
 
 
         #region 資料庫必要欄位
