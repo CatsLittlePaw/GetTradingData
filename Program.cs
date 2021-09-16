@@ -44,6 +44,7 @@ namespace GetTradeClosingDataBatchJob
             // 欲抓取的股票代號由Config設定
             IList<string> StockCodeList = new List<string>(StockCodes.Split(','));
 
+            /*
             if (!string.IsNullOrEmpty(StartDate))
             {
                 if (!string.IsNullOrEmpty(EndDate))
@@ -64,10 +65,11 @@ namespace GetTradeClosingDataBatchJob
             }
             else
             {
+            */
                 // StartDate及EndDate皆為空值，抓取當日
                 string date = DateTime.Now.ToString("yyyyMMdd");
                 Crawler(date);
-            }
+            //}
             
 
             log.Info(string.Format("執行完畢: {0}", BatchJobName));
@@ -84,11 +86,12 @@ namespace GetTradeClosingDataBatchJob
         {
             HttpClient httpClient = new HttpClient();
             string url = string.Format("https://www.twse.com.tw/exchangeReport/MI_INDEX?response=json&date={0}&type=ALLBUT0999", date);
-            log.Info("開始發送請求");
+            log.Info(string.Format("開始發送請求\n\tUrl: {0}", url));
             try
             {
+                Random rnd = new Random();
                 //設置延遲
-                Thread.Sleep(250);
+                Thread.Sleep(rnd.Next(1, 5));
                 var responseMessage = await httpClient.GetAsync(url); //發送請求
 
                 //檢查回應的伺服器狀態StatusCode是否是200 OK
