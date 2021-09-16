@@ -91,7 +91,7 @@ namespace GetTradeClosingDataBatchJob
             {
                 Random rnd = new Random();
                 //設置延遲
-                Thread.Sleep(rnd.Next(1, 5));
+                Thread.Sleep(rnd.Next(1000, 5000));
                 var responseMessage = await httpClient.GetAsync(url); //發送請求
 
                 //檢查回應的伺服器狀態StatusCode是否是200 OK
